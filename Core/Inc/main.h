@@ -28,6 +28,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
+
 #include "stm32f4xx_ll_adc.h"
 #include "stm32f4xx_ll_i2c.h"
 #include "stm32f4xx_ll_rcc.h"
