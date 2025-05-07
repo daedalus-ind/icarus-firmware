@@ -8,3 +8,10 @@ compile_commands.json
 
 # VSCode
 .vscode/
+
+# Windows
+Thumbs.db
+# MacOS
+.DS_Store
+# Linux
+*~
