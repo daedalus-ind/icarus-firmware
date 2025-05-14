@@ -125,4 +125,43 @@ void MX_SPI2_Init(void)
 
 /* USER CODE BEGIN 1 */
 
+bool SPIx_TransmitReceive8(SPI_TypeDef *SPIx, const uint8_t *tx_data, uint8_t *rx_data, uint16_t size, uint32_t timeout) {
+  uint32_t tickstart = Tick_GetTick();
+
+  while (size > 0) {
+    // Wait until TX buffer is empty
+    while (!(SPIx->SR & SPI_SR_TXE)) {
+      if ((Tick_GetTick() - tickstart) > timeout) {
+        return false;
+      }
+    }
+    *(volatile uint8_t *)&SPIx->DR = *tx_data; // Transmit data
+    tx_data++; 
+
+    // Wait until RX buffer is not empty
+    while (!(SPIx->SR & SPI_SR_RXNE)) {
+      if ((Tick_GetTick() - tickstart) > timeout) {
+        return false;
+      }
+    }
+    uint8_t rx_byte = *(volatile uint8_t *)&SPIx->DR; // Receive data
+    // Store the received data if the pointer is not NULL
+    if (rx_data != NULL) {
+      *rx_data = rx_byte;
+      rx_data++;
+    }
+
+    size--;
+  }
+
+  // Wait until the communication is completed
+  while (SPIx->SR & SPI_SR_BSY) {
+    if ((Tick_GetTick() - tickstart) > timeout) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 /* USER CODE END 1 */
