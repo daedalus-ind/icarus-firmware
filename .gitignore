@@ -7,7 +7,9 @@ cmake_install.cmake
 compile_commands.json
 
 # VSCode
+.settings/
 .vscode/
+.clangd
 
 # Windows
 Thumbs.db
