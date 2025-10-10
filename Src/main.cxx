@@ -31,8 +31,8 @@
 #include "radio/radio.hxx"
 #include "radio/message.hxx"
 
-#include "geo/ecef.hpp"
-#include "geo/enu.hpp"
+#include "geo/ecef.hxx"
+#include "geo/enu.hxx"
 
 #include "math/vec3.hxx"
 #include "math/mat3x3.hxx"
