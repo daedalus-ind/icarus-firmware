@@ -38,7 +38,7 @@ bool i2c::write(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t 
   }
 
   /* 3. Send slave address with the write bit (0x00) */
-  *reinterpret_cast<volatile uint8_t*>(&i2c_x->DR) = (dev_addr << 1) | 0x00;
+  *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = (dev_addr << 1) | 0x00;
 
   /* 4. Wait for ADDR flag to be set (EV6) */
   while (!(i2c_x->SR1 & I2C_SR1_ADDR)) {
@@ -59,7 +59,7 @@ bool i2c::write(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t 
   }
 
   /* 7. Send register address */
-  *reinterpret_cast<volatile uint8_t*>(&i2c_x->DR) = reg_addr;
+  *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = reg_addr;
 
   /* 8. Send data */
   for (uint16_t i = 0; i < len; i++) {
@@ -69,7 +69,7 @@ bool i2c::write(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t 
       else if (i2c_x->SR1 & I2C_SR1_AF)
         goto CLEAR_NACK;
     }
-    *reinterpret_cast<volatile uint8_t*>(&i2c_x->DR) = data[i];
+    *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = data[i];
   }
 
   /* 9. Wait until TXE and BTF flags are set (EV8_2) */
@@ -111,7 +111,7 @@ bool i2c::read(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* 
   }
 
   /* 3. Send slave address with the write bit (0) */
-  *reinterpret_cast<volatile uint8_t*>(&i2c_x->DR) = (dev_addr << 1) | 0x00;
+  *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = (dev_addr << 1) | 0x00;
 
   /* 4. Wait for ADDR flag to be set (EV6) */
   while (!(i2c_x->SR1 & I2C_SR1_ADDR)) {
@@ -132,7 +132,7 @@ bool i2c::read(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* 
   }
 
   /* 7. Send register address */
-  *reinterpret_cast<volatile uint8_t*>(&i2c_x->DR) = reg_addr;
+  *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = reg_addr;
 
   /* 8. Wait until BTF flag is set */
   while (!(i2c_x->SR1 & I2C_SR1_BTF)) {
@@ -152,7 +152,7 @@ bool i2c::read(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* 
   }
 
   /* 11. Send slave address with the read bit (1) */
-  *reinterpret_cast<volatile uint8_t*>(&i2c_x->DR) = (dev_addr << 1) | 0x01;
+  *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = (dev_addr << 1) | 0x01;
 
   /* 12. Wait for ADDR flag to be set (EV6) */
   while (!(i2c_x->SR1 & I2C_SR1_ADDR)) {
@@ -181,7 +181,7 @@ bool i2c::read(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* 
     i2c_x->CR1 |= I2C_CR1_STOP;
 
     /* Read data */
-    *data = *reinterpret_cast<volatile uint8_t*>(&i2c_x->DR);
+    *data = *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR);
   } else if (len == 2) {
     /* Disable ACK */
     i2c_x->CR1 &= ~I2C_CR1_ACK;
@@ -203,8 +203,8 @@ bool i2c::read(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* 
     i2c_x->CR1 |= I2C_CR1_STOP;
 
     /* Read data */
-    data[0] = *reinterpret_cast<volatile uint8_t*>(&i2c_x->DR);
-    data[1] = *reinterpret_cast<volatile uint8_t*>(&i2c_x->DR);
+    data[0] = *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR);
+    data[1] = *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR);
   } else {
     /* Clear ADDR flag */
     (void)i2c_x->SR1;
@@ -217,7 +217,7 @@ bool i2c::read(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* 
         if (timer.is_expired())
           goto STOP;
       }
-      data[i] = *reinterpret_cast<volatile uint8_t*>(&i2c_x->DR);
+      data[i] = *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR);
     }
 
     /* Wait until BTF flag is set (data len-3 in DR, data len-2 in SR) */
@@ -230,7 +230,7 @@ bool i2c::read(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* 
     i2c_x->CR1 &= ~I2C_CR1_ACK;
 
     /* Read data len-3 */
-    data[len - 3] = *reinterpret_cast<volatile uint8_t*>(&i2c_x->DR);
+    data[len - 3] = *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR);
 
     /* Wait until BTF flag is set (data len-2 in DR, data len-1 in SR) */
     while (!(i2c_x->SR1 & I2C_SR1_BTF)) {
@@ -242,8 +242,8 @@ bool i2c::read(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* 
     i2c_x->CR1 |= I2C_CR1_STOP;
 
     /* Read data len-2 and len-1 */
-    data[len - 2] = *reinterpret_cast<volatile uint8_t*>(&i2c_x->DR);
-    data[len - 1] = *reinterpret_cast<volatile uint8_t*>(&i2c_x->DR);
+    data[len - 2] = *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR);
+    data[len - 1] = *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR);
   }
 
   return true;

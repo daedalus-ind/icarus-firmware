@@ -16,11 +16,9 @@
  ******************************************************************************
  */
 #include "usart.hxx"
-#include "stm32f4xx_ll_dma.h"
-#include "stm32f4xx_ll_usart.h"
 #include "time.hxx"
 
-bool serial::write(USART_TypeDef *usart_x, uint8_t const* data, uint16_t len, uint32_t timeout) {
+bool serial::write(USART_TypeDef* usart_x, uint8_t const* data, uint16_t len, uint32_t timeout) {
   time::Timer timer;
   timer.start(timeout);
 
@@ -33,13 +31,13 @@ bool serial::write(USART_TypeDef *usart_x, uint8_t const* data, uint16_t len, ui
     }
     
     /* Send data */
-    *reinterpret_cast<volatile uint8_t*>(&usart_x->DR) = data[i];
+    *reinterpret_cast<volatile uint8_t *>(&usart_x->DR) = data[i];
   }
 
   return true;
 }
 
-bool serial::read(USART_TypeDef *usart_x, uint8_t* data, uint16_t len, uint32_t timeout) {
+bool serial::read(USART_TypeDef* usart_x, uint8_t* data, uint16_t len, uint32_t timeout) {
   time::Timer timer;
   timer.start(timeout);
 
@@ -52,7 +50,7 @@ bool serial::read(USART_TypeDef *usart_x, uint8_t* data, uint16_t len, uint32_t 
     }
 
     /* Read data */
-    data[i] = *reinterpret_cast<volatile uint8_t*>(&usart_x->DR);
+    data[i] = *reinterpret_cast<volatile uint8_t *>(&usart_x->DR);
   }
 
   return true;
@@ -117,7 +115,7 @@ void MX_USART2_UART_Init() {
   LL_USART_ConfigAsyncMode(USART2);
   LL_USART_Enable(USART2);
 
-  LL_USART_EnableDMAReq_TX(USART2);
+  // LL_USART_EnableDMAReq_TX(USART2);
   LL_USART_EnableIT_RXNE(USART2);
   LL_USART_EnableIT_ERROR(USART2);
 

@@ -28,7 +28,7 @@ namespace spi {
   class ChipSelectPin {
   public:
     /* Constructor to initialize the CS pin */
-    inline explicit ChipSelectPin(GPIO_TypeDef *port, uint32_t pin) 
+    inline explicit ChipSelectPin(GPIO_TypeDef* port, uint32_t pin) 
       : _port{port}, 
         _pin{pin} {
       deselect();
@@ -49,7 +49,7 @@ namespace spi {
     }
 
   private:
-    GPIO_TypeDef *_port;
+    GPIO_TypeDef* _port;
     uint32_t _pin;
   };
 
@@ -62,7 +62,7 @@ namespace spi {
    * @param timeout Timeout duration in milliseconds
    * @return `true` if the write operation was successful, `false` otherwise
    */
-  bool write(SPI_TypeDef *spi_x, uint16_t reg, uint8_t const *data, uint16_t len, uint32_t timeout);
+  bool write(SPI_TypeDef* spi_x, uint16_t reg, uint8_t const* data, uint16_t len, uint32_t timeout);
 
   /**
    * @brief Read data from an SPI device.
@@ -73,7 +73,7 @@ namespace spi {
    * @param timeout Timeout duration in milliseconds
    * @return `true` if the read operation was successful, `false` otherwise
    */
-  bool read(SPI_TypeDef *spi_x, uint16_t reg, uint8_t *data, uint16_t len, uint32_t timeout);
+  bool read(SPI_TypeDef* spi_x, uint16_t reg, uint8_t* data, uint16_t len, uint32_t timeout);
 
   /**
    * @brief Read dummy data from an SPI device (used for devices that require dummy reads).
@@ -83,7 +83,7 @@ namespace spi {
    * @param timeout Timeout duration in milliseconds
    * @return `true` if the dummy read operation was successful, `false` otherwise
    */
-  bool read_dummy(SPI_TypeDef *spi_x, uint16_t reg, uint16_t len, uint32_t timeout);
+  bool read_dummy(SPI_TypeDef* spi_x, uint16_t reg, uint16_t len, uint32_t timeout);
 
 }
 

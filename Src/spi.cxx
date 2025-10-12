@@ -18,7 +18,7 @@
 #include "spi.hxx"
 #include "time.hxx"
 
-bool spi::write(SPI_TypeDef *spi_x, uint16_t reg, const uint8_t *data, uint16_t len, uint32_t timeout) {
+bool spi::write(SPI_TypeDef *spi_x, uint16_t reg, const uint8_t* data, uint16_t len, uint32_t timeout) {
   time::Timer timer;
   timer.start(timeout);
 
@@ -30,7 +30,7 @@ bool spi::write(SPI_TypeDef *spi_x, uint16_t reg, const uint8_t *data, uint16_t 
     }
 
     /* 1.b. Send high byte of register address */
-    *reinterpret_cast<volatile uint8_t*>(&spi_x->DR) = (reg >> 8) & 0xFF;
+    *reinterpret_cast<volatile uint8_t *>(&spi_x->DR) = (reg >> 8) & 0xFF;
 
     /* 1.c. Wait until RXNE flag is set */
     while (!(spi_x->SR & SPI_SR_RXNE)) {
@@ -49,7 +49,7 @@ bool spi::write(SPI_TypeDef *spi_x, uint16_t reg, const uint8_t *data, uint16_t 
   }
 
   /* 2. Send low byte of register address */
-  *reinterpret_cast<volatile uint8_t*>(&spi_x->DR) = reg & 0xFF;
+  *reinterpret_cast<volatile uint8_t *>(&spi_x->DR) = reg & 0xFF;
 
   /* 3. Wait until RXNE flag is set */
   while (!(spi_x->SR & SPI_SR_RXNE)) {
@@ -69,7 +69,7 @@ bool spi::write(SPI_TypeDef *spi_x, uint16_t reg, const uint8_t *data, uint16_t 
     }
 
     /* 5.b. Send data byte */
-    *reinterpret_cast<volatile uint8_t*>(&spi_x->DR) = data[i];
+    *reinterpret_cast<volatile uint8_t *>(&spi_x->DR) = data[i];
 
     /* 5.c. Wait until RXNE flag is set */
     while (!(spi_x->SR & SPI_SR_RXNE)) {
@@ -90,7 +90,7 @@ bool spi::write(SPI_TypeDef *spi_x, uint16_t reg, const uint8_t *data, uint16_t 
   return true;
 }
 
-bool spi::read(SPI_TypeDef *spi_x, uint16_t reg, uint8_t *data, uint16_t len, uint32_t timeout) {
+bool spi::read(SPI_TypeDef *spi_x, uint16_t reg, uint8_t* data, uint16_t len, uint32_t timeout) {
   time::Timer timer;
   timer.start(timeout);
 
@@ -102,7 +102,7 @@ bool spi::read(SPI_TypeDef *spi_x, uint16_t reg, uint8_t *data, uint16_t len, ui
     }
 
     /* 1.b. Send high byte of register address */
-    *reinterpret_cast<volatile uint8_t*>(&spi_x->DR) = (reg >> 8) & 0xFF;
+    *reinterpret_cast<volatile uint8_t *>(&spi_x->DR) = (reg >> 8) & 0xFF;
 
     /* 1.c. Wait until RXNE flag is set */
     while (!(spi_x->SR & SPI_SR_RXNE)) {
@@ -120,8 +120,8 @@ bool spi::read(SPI_TypeDef *spi_x, uint16_t reg, uint8_t *data, uint16_t len, ui
       return false;
   }
 
-  /* 2. Send low byte of register address with read bit (0x80) */
-  *reinterpret_cast<volatile uint8_t*>(&spi_x->DR) = (reg & 0xFF) | 0x80;
+  /* 2. Send low byte of register address */
+  *reinterpret_cast<volatile uint8_t *>(&spi_x->DR) = reg & 0xFF;
 
   /* 3. Wait until RXNE flag is set */
   while (!(spi_x->SR & SPI_SR_RXNE)) {
@@ -141,7 +141,7 @@ bool spi::read(SPI_TypeDef *spi_x, uint16_t reg, uint8_t *data, uint16_t len, ui
     }
 
     /* 5.b. Send dummy byte to generate clock for reading */
-    *reinterpret_cast<volatile uint8_t*>(&spi_x->DR) = 0x00;
+    *reinterpret_cast<volatile uint8_t *>(&spi_x->DR) = 0x00;
 
     /* 5.c. Wait until RXNE flag is set */
     while (!(spi_x->SR & SPI_SR_RXNE)) {
@@ -150,7 +150,7 @@ bool spi::read(SPI_TypeDef *spi_x, uint16_t reg, uint8_t *data, uint16_t len, ui
     }
 
     /* 5.d. Read data byte */
-    data[i] = *reinterpret_cast<volatile uint8_t*>(&spi_x->DR);
+    data[i] = *reinterpret_cast<volatile uint8_t *>(&spi_x->DR);
   }
 
   /* 6. Wait for BSY flag to be reset */
@@ -174,7 +174,7 @@ bool spi::read_dummy(SPI_TypeDef *spi_x, uint16_t reg, uint16_t len, uint32_t ti
     }
 
     /* 1.b. Send high byte of register address */
-    *reinterpret_cast<volatile uint8_t*>(&spi_x->DR) = (reg >> 8) & 0xFF;
+    *reinterpret_cast<volatile uint8_t *>(&spi_x->DR) = (reg >> 8) & 0xFF;
 
     /* 1.c. Wait until RXNE flag is set */
     while (!(spi_x->SR & SPI_SR_RXNE)) {
@@ -193,7 +193,7 @@ bool spi::read_dummy(SPI_TypeDef *spi_x, uint16_t reg, uint16_t len, uint32_t ti
   }
 
   /* 2. Send low byte of register address with read bit (0x80) */
-  *reinterpret_cast<volatile uint8_t*>(&spi_x->DR) = (reg & 0xFF) | 0x80;
+  *reinterpret_cast<volatile uint8_t *>(&spi_x->DR) = reg & 0xFF;
 
   /* 3. Wait until RXNE flag is set */
   while (!(spi_x->SR & SPI_SR_RXNE)) {
@@ -213,7 +213,7 @@ bool spi::read_dummy(SPI_TypeDef *spi_x, uint16_t reg, uint16_t len, uint32_t ti
     }
 
     /* 5.b. Send dummy byte to generate clock for reading */
-    *reinterpret_cast<volatile uint8_t*>(&spi_x->DR) = 0x00;
+    *reinterpret_cast<volatile uint8_t *>(&spi_x->DR) = 0x00;
 
     /* 5.c. Wait until RXNE flag is set */
     while (!(spi_x->SR & SPI_SR_RXNE)) {

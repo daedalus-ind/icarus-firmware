@@ -30,7 +30,7 @@ namespace serial {
    * @param timeout Timeout duration in milliseconds
    * @return `true` if the write operation was successful, `false` otherwise
    */
-  bool write(USART_TypeDef *usart_x, uint8_t const* data, uint16_t len, uint32_t timeout);
+  bool write(USART_TypeDef* usart_x, uint8_t const* data, uint16_t len, uint32_t timeout);
 
   /**
    * @brief Read data from a USART peripheral.
@@ -40,7 +40,7 @@ namespace serial {
    * @param timeout Timeout duration in milliseconds
    * @return `true` if the read operation was successful, `false` otherwise
    */
-  bool read(USART_TypeDef *usart_x, uint8_t* data, uint16_t len, uint32_t timeout);
+  bool read(USART_TypeDef* usart_x, uint8_t* data, uint16_t len, uint32_t timeout);
 
 }
 

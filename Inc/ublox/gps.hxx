@@ -79,7 +79,7 @@ namespace ubx {
     /**
      * @brief Get velocity in North, East, Down components in standard units.
      */
-    inline std::tuple<float, float, float> get_vnvevd() volatile const {
+    inline std::tuple<float, float, float> get_velocity_ned() volatile const {
       return {_velN * 1e-3f, _velE * 1e-3f, _velD * 1e-3f};
     }
 

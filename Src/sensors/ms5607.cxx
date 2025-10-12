@@ -91,7 +91,7 @@ bool sensors::MS5607::read_adc(uint32_t& measure) {
 
   /* Read conversion result */
   uint8_t meas_bytes[3];
-  rslt &= read_reg(CMD_ADC_READ, meas_bytes, 3);
+  rslt &= read_reg(CMD_ADC_READ, meas_bytes, sizeof(meas_bytes));
 
   /* Convert result to 24 bit */
   measure = static_cast<uint32_t>((meas_bytes[0] << 16) + (meas_bytes[1] << 8) + meas_bytes[2]);
@@ -146,7 +146,7 @@ inline uint8_t sensors::MS5607::calc_crc4() {
   return static_cast<uint8_t>(crc_rem);
 }
 
-bool sensors::MS5607::write_reg(uint8_t reg_addr, const uint8_t* data, int16_t size) {
+bool sensors::MS5607::write_reg(uint8_t reg_addr, const uint8_t* data, uint16_t size) {
   bool rslt = true;
 
   _cs_pin.select();
@@ -156,7 +156,7 @@ bool sensors::MS5607::write_reg(uint8_t reg_addr, const uint8_t* data, int16_t s
   return rslt;
 }
 
-bool sensors::MS5607::read_reg(uint8_t reg_addr, uint8_t* data, int16_t size) {
+bool sensors::MS5607::read_reg(uint8_t reg_addr, uint8_t* data, uint16_t size) {
   bool rslt = true;
 
   _cs_pin.select();

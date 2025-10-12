@@ -39,8 +39,8 @@ namespace sensors {
     inline bool read_prom();
     inline uint8_t calc_crc4();
 
-    inline bool write_reg(uint8_t reg_addr, const uint8_t* data, int16_t size);
-    inline bool read_reg(uint8_t reg_addr, uint8_t* data, int16_t size);
+    inline bool write_reg(uint8_t reg_addr, const uint8_t* data, uint16_t size);
+    inline bool read_reg(uint8_t reg_addr, uint8_t* data, uint16_t size);
 
   public:
     MS5607(SPI_TypeDef* spi, GPIO_TypeDef* cs_port, uint32_t cs_pin) 
