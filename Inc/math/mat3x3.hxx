@@ -1,20 +1,20 @@
 /**
-  ******************************************************************************
-  * @file    mat3x3.hxx
-  * @brief   This file provides a 3x3 matrix class with common 
-  *          matrix operations
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 Daedalus Industries.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    mat3x3.hxx
+ * @brief   This file provides a 3x3 matrix class with common 
+ *          matrix operations
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 Daedalus Industries.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 #ifndef __MATH_MAT3X3_HXX__
 #define __MATH_MAT3X3_HXX__
 
@@ -216,13 +216,8 @@ namespace math {
      * @brief Scalar division.
      */
     constexpr Mat3x3 operator/(float scalar) const {
-      Mat3x3 result;
-      for (size_t i = 0; i < 3; ++i) {
-        for (size_t j = 0; j < 3; ++j) {
-          result.data[i][j] = data[i][j] / scalar;
-        }
-      }
-      return result;
+      float inv_scalar = 1.0f / scalar;
+      return *this * inv_scalar;
     }
     /**
      * @brief Matrix multiplication.
@@ -287,12 +282,8 @@ namespace math {
      * @brief Scalar division assignment.
      */
     constexpr Mat3x3& operator/=(float scalar) {
-      for (size_t i = 0; i < 3; ++i) {
-        for (size_t j = 0; j < 3; ++j) {
-          data[i][j] /= scalar;
-        }
-      }
-      return *this;
+      float inv_scalar = 1.0f / scalar;
+      return *this *= inv_scalar;
     }
 
     /**
@@ -317,18 +308,10 @@ namespace math {
 
     /**
      * @brief Computes the inverse of the matrix.
-     * @note If the matrix is non-invertible (determinant is zero),
-     *       a zero matrix is returned.
+     * @note The matrix must be invertible (non-zero determinant).
      */
     constexpr Mat3x3 inv() const {
-      float determinant = det(); 
-
-      /* Handle non-invertible matrix */
-      if (determinant == 0.0f) {
-        return Mat3x3::zero(); 
-      } 
-
-      float inv_det = 1.0f / determinant;
+      float inv_det = 1.0f / det();
       return Mat3x3(
         (m11 * m22 - m12 * m21) * inv_det,
         (m02 * m21 - m01 * m22) * inv_det,

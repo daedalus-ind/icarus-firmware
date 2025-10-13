@@ -1,20 +1,20 @@
 /**
-  ******************************************************************************
-  * @file    quat.hxx
-  * @brief   This file provides a quaternion class with common 
-  *          quaternion operations
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 Daedalus Industries.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    quat.hxx
+ * @brief   This file provides a quaternion class with common 
+ *          quaternion operations
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 Daedalus Industries.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 #ifndef __MATH_QUAT_HXX__
 #define __MATH_QUAT_HXX__
 
@@ -148,7 +148,8 @@ namespace math {
      * @brief Scalar division.
      */
     constexpr Quat operator/(float scalar) const {
-      return Quat(w / scalar, x / scalar, y / scalar, z / scalar);
+      float inv_scalar = 1.0f / scalar;
+      return *this * inv_scalar;
     }
     /**
      * @brief Quaternion multiplication (Hamilton product).
@@ -196,11 +197,8 @@ namespace math {
      * @brief Scalar division assignment.
      */
     constexpr Quat& operator/=(float scalar) {
-      w /= scalar;
-      x /= scalar;
-      y /= scalar;
-      z /= scalar;
-      return *this;
+      float inv_scalar = 1.0f / scalar;
+      return *this *= inv_scalar;
     }
 
     /**
@@ -226,31 +224,19 @@ namespace math {
 
     /**
      * @brief Normalizes the quaternion to unit length.
-     * @note Returns zero quaternion if this quaternion has zero length.
+     * @note The quaternion must be non-zero.
      */
     constexpr Quat normalized() const {
       float n = norm();
-
-      /* Handle zero-length quaternion */
-      if (n == 0.0f) {
-        return Quat::zero();
-      }
-
       return *this / n;
     }
 
     /**
      * @brief Computes the inverse of the quaternion.
-     * @note Returns zero quaternion if this quaternion has zero length.
+     * @note The quaternion must be non-zero.
      */
     constexpr Quat inv() const {
       float n = norm();
-
-      /* Handle zero-length quaternion */
-      if (n == 0.0f) {
-        return Quat::zero();
-      }
-
       return conj() / (n * n);
     }
 

@@ -1,20 +1,20 @@
 /**
-  ******************************************************************************
-  * @file    vec3.hxx
-  * @brief   This file provides a 3D vector class with common 
-  *          vector operations
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 Daedalus Industries.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    vec3.hxx
+ * @brief   This file provides a 3D vector class with common 
+ *          vector operations
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 Daedalus Industries.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 #ifndef __MATH_VEC3_HXX__
 #define __MATH_VEC3_HXX__
 
@@ -159,7 +159,8 @@ namespace math {
      * @brief Scalar division.
      */
     constexpr Vec3 operator/(float scalar) const {
-      return Vec3(x / scalar, y / scalar, z / scalar);
+      float inv_scalar = 1.0f / scalar;
+      return *this * inv_scalar;
     }
 
     /**
@@ -193,10 +194,8 @@ namespace math {
      * @brief Scalar division assignment.
      */
     constexpr Vec3& operator/=(float scalar) {
-      x /= scalar;
-      y /= scalar;
-      z /= scalar;
-      return *this;
+      float inv_scalar = 1.0f / scalar;
+      return *this *= inv_scalar;
     }
 
     /**
@@ -226,17 +225,11 @@ namespace math {
     
     /**
      * @brief Returns a normalized (unit length) version of the vector.
-     * @note If the vector has zero length, returns the zero vector.
+     * @note The vector must be non-zero.
      */
     constexpr Vec3 normalized() const {
       float n = norm();
-
-      /* Handle zero-length vector */
-      if (n == 0.0f) {
-        return Vec3::zero();
-      } 
-
-      return Vec3(x / n, y / n, z / n);
+      return *this / n;
     }
   }; 
 
@@ -263,40 +256,29 @@ namespace math {
 
   /**
    * @brief Computes the angle in radians between two vectors.
-    * @note Returns 0 if either vector has zero length.
+    * @note Both vectors must be non-zero.
    */
   constexpr float angle_between(Vec3 const& lhs, Vec3 const& rhs) {
     float dot_product = dot(lhs, rhs);
     float norms_product = norm(lhs) * norm(rhs);
 
-    /* Handle zero-length vectors */
-    if (norms_product == 0.0f) {
-      return 0.0f;
-    }
-
     float cos_theta = dot_product / norms_product;
 
     /* Clamp to valid range to avoid NaNs from acos */
-    if (cos_theta > 1.0f) {
+    if (cos_theta > 1.0f)
       cos_theta = 1.0f;
-    } else if (cos_theta < -1.0f) {
+    else if (cos_theta < -1.0f)
       cos_theta = -1.0f;
-    }
 
     return std::acos(cos_theta);
   }
 
   /**
    * @brief Projects vector 'vec' onto vector 'onto'.
-   * @note If 'onto' is a zero-length vector, returns the zero vector.
+   * @note The 'onto' vector must be non-zero.
    */
   constexpr Vec3 project(Vec3 const& vec, Vec3 const& onto) {
     float onto_norm_sq = dot(onto, onto);
-
-    /* Handle zero-length 'onto' vector */
-    if (onto_norm_sq == 0.0f) {
-      return Vec3(0.0f, 0.0f, 0.0f);
-    }
 
     float scalar = dot(vec, onto) / onto_norm_sq;
     return onto * scalar;
