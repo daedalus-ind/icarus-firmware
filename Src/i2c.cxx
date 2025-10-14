@@ -18,7 +18,7 @@
 #include "i2c.hxx"
 #include "time.hxx"
 
-bool i2c::write(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t const* data, uint16_t len, uint32_t timeout) {
+bool i2c::write(I2C_TypeDef* i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t const* data, uint16_t len, uint32_t timeout) {
   /**
    * This procedure is based on paragraph "Master transmitter", section 27.3.3, page 851, of reference manual RM0090
    * for the STM32F405 series of microcontrollers.
@@ -37,8 +37,8 @@ bool i2c::write(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t 
       goto STOP;
   }
 
-  /* 3. Send slave address with the write bit (0x00) */
-  *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = (dev_addr << 1) | 0x00;
+  /* 3. Send slave address with write bit */
+  *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = (dev_addr << 1) & ~0x01;
 
   /* 4. Wait for ADDR flag to be set (EV6) */
   while (!(i2c_x->SR1 & I2C_SR1_ADDR)) {
@@ -83,6 +83,9 @@ bool i2c::write(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t 
   /* 10. Generate STOP condition */
   i2c_x->CR1 |= I2C_CR1_STOP;
 
+  /* 11. Wait for BSY flag to be reset */
+  while (i2c_x->SR2 & I2C_SR2_BUSY) {}
+
   return true;
 
 CLEAR_NACK:
@@ -92,7 +95,7 @@ STOP:
   return false;
 }
 
-bool i2c::read(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* data, uint16_t len, uint32_t timeout) {
+bool i2c::read(I2C_TypeDef* i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* data, uint16_t len, uint32_t timeout) {
   /**
    * This procedure is based on paragraph "Master receiver", section 27.3.3, page 852, of reference manual RM0090
    * for the STM32F405 series of microcontrollers.
@@ -111,7 +114,7 @@ bool i2c::read(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* 
   }
 
   /* 3. Send slave address with the write bit (0) */
-  *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = (dev_addr << 1) | 0x00;
+  *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = (dev_addr << 1) & ~0x01;
 
   /* 4. Wait for ADDR flag to be set (EV6) */
   while (!(i2c_x->SR1 & I2C_SR1_ADDR)) {

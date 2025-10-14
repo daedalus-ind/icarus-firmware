@@ -32,7 +32,7 @@ namespace i2c {
    * @param timeout Timeout duration in milliseconds
    * @return `true` if the write operation was successful, `false` otherwise
    */
-  bool write(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t const* data, uint16_t len, uint32_t timeout);
+  bool write(I2C_TypeDef* i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t const* data, uint16_t len, uint32_t timeout);
 
   /**
    * @brief Read data from an I2C device.
@@ -44,7 +44,7 @@ namespace i2c {
    * @param timeout Timeout duration in milliseconds
    * @return `true` if the read operation was successful, `false` otherwise
    */
-  bool read(I2C_TypeDef *i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* data, uint16_t len, uint32_t timeout);
+  bool read(I2C_TypeDef* i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* data, uint16_t len, uint32_t timeout);
 
 }
 
