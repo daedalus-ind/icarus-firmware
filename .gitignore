@@ -1,14 +1,11 @@
 # STM32CubeMX
-build/
-build.ninja
-CMakeCache.txt 
-CMakeFiles/
-cmake_install.cmake
-compile_commands.json
+build
+.mxproject
+mx.scratch
 
 # VSCode
-.settings/
-.vscode/
+.settings
+.vscode
 .clangd
 
 # Windows

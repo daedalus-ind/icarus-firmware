@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
-# Enable CMake support for ASM, C and CXX languages
-enable_language(C CXX ASM)
+# Enable CMake support for ASM and C languages
+enable_language(C ASM)
 # STM32CubeMX generated symbols (macros)
 set(MX_Defines_Syms 
 	USE_FULL_LL_DRIVER 
@@ -29,13 +29,14 @@ set(MX_Include_Dirs
 
 # STM32CubeMX generated application sources
 set(MX_Application_Src
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/main.cxx
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/gpio.cxx
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/dma.cxx
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/i2c.cxx
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/spi.cxx
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/usart.cxx
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/stm32f4xx_it.cxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/main.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/gpio.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/i2c.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/spi.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/usart.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/stm32f4xx_it.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/sysmem.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/syscalls.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../startup_stm32f405xx.s
 )
 
@@ -43,8 +44,8 @@ set(MX_Application_Src
 set(STM32_Drivers_Src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Src/system_stm32f4xx.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_gpio.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_dma.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_i2c.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_dma.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_rcc.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_utils.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_exti.c
