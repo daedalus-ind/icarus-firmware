@@ -22,9 +22,9 @@
 void MX_I2C3_Init()
 {
 
-  LL_I2C_InitTypeDef I2C_InitStruct = {};
+  LL_I2C_InitTypeDef I2C_InitStruct {};
 
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {};
+  LL_GPIO_InitTypeDef GPIO_InitStruct {};
 
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOC);
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
@@ -77,19 +77,31 @@ bool i2c::write(I2C_TypeDef* i2c_x, uint8_t dev_addr, uint8_t reg_addr, const ui
    */
   time::ScopedTimer timer{timeout};
 
-  // 1. Generate START condition and enable ACK
-  i2c_x->CR1 |= I2C_CR1_START | I2C_CR1_ACK;
+  // 1. Wait until I2C is not busy
+  while (i2c_x->SR2 & I2C_SR2_BUSY) {
+    if (timer.isExpired())
+      goto STOP;
+  }
 
-  // 2. Wait for SB flag to be set (EV5)
+  // 2. Disable POS flag
+  i2c_x->CR1 &= ~I2C_CR1_POS;
+
+  // 3. Enable acknowledge
+  i2c_x->CR1 |= I2C_CR1_ACK;
+
+  // 4. Generate START condition
+  i2c_x->CR1 |= I2C_CR1_START;
+
+  // 5. Wait for SB flag to be set (EV5)
   while (!(i2c_x->SR1 & I2C_SR1_SB)) {
     if (timer.isExpired())
       goto STOP;
   }
 
-  // 3. Send slave address with write bit
+  // 6. Send slave address with write bit
   *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = (dev_addr << 1) & ~0x01;
 
-  // 4. Wait for ADDR flag to be set (EV6)
+  // 7. Wait for ADDR flag to be set (EV6)
   while (!(i2c_x->SR1 & I2C_SR1_ADDR)) {
     if (timer.isExpired())
       goto STOP;
@@ -97,20 +109,20 @@ bool i2c::write(I2C_TypeDef* i2c_x, uint8_t dev_addr, uint8_t reg_addr, const ui
       goto CLEAR_NACK;
   }
 
-  // 5. Clear ADDR flag
+  // 8. Clear ADDR flag
   (void)i2c_x->SR1;
   (void)i2c_x->SR2;
 
-  // 6. Wait for TXE flag to be set (EV8_1)
+  // 9. Wait for TXE flag to be set (EV8_1)
   while (!(i2c_x->SR1 & I2C_SR1_TXE)) {
     if (timer.isExpired())
       goto STOP;
   }
 
-  // 7. Send register address
+  // 10. Send register address
   *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = reg_addr;
 
-  // 8. Send data
+  // 11. Send data
   for (uint16_t i = 0; i < len; i++) {
     while (!(i2c_x->SR1 & I2C_SR1_TXE)) {
       if (timer.isExpired())
@@ -121,7 +133,7 @@ bool i2c::write(I2C_TypeDef* i2c_x, uint8_t dev_addr, uint8_t reg_addr, const ui
     *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = data[i];
   }
 
-  // 9. Wait until TXE and BTF flags are set (EV8_2)
+  // 12. Wait until TXE and BTF flags are set (EV8_2)
   while (!(i2c_x->SR1 & I2C_SR1_TXE) || !(i2c_x->SR1 & I2C_SR1_BTF)) {
     if (timer.isExpired())
       goto STOP;
@@ -129,14 +141,8 @@ bool i2c::write(I2C_TypeDef* i2c_x, uint8_t dev_addr, uint8_t reg_addr, const ui
       goto CLEAR_NACK;
   }
 
-  // 10. Generate STOP condition
+  // 13. Generate STOP condition
   i2c_x->CR1 |= I2C_CR1_STOP;
-
-  // 11. Wait for BSY flag to be reset
-  while (i2c_x->SR2 & I2C_SR2_BUSY) {
-    if (timer.isExpired())
-      goto STOP;
-  }
 
   return true;
 
@@ -156,19 +162,31 @@ bool i2c::read(I2C_TypeDef* i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* 
    */
   time::ScopedTimer timer{timeout};
 
-  // 1. Generate START condition and enable ACK
-  i2c_x->CR1 |= I2C_CR1_START | I2C_CR1_ACK;
+  // 1. Wait until I2C is not busy
+  while (i2c_x->SR2 & I2C_SR2_BUSY) {
+    if (timer.isExpired())
+      goto STOP;
+  }
 
-  // 2. Wait for SB flag to be set (EV5)
+  // 2. Disable POS flag
+  i2c_x->CR1 &= ~I2C_CR1_POS;
+
+  // 3. Enable acknowledge
+  i2c_x->CR1 |= I2C_CR1_ACK;
+
+  // 4. Generate START condition
+  i2c_x->CR1 |= I2C_CR1_START;
+
+  // 5. Wait for SB flag to be set (EV5)
   while (!(i2c_x->SR1 & I2C_SR1_SB)) {
     if (timer.isExpired())
       goto STOP;
   }
 
-  // 3. Send slave address with the write bit (0)
+  // 6. Send slave address with the write bit (0)
   *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = (dev_addr << 1) & ~0x01;
 
-  // 4. Wait for ADDR flag to be set (EV6)
+  // 7. Wait for ADDR flag to be set (EV6)
   while (!(i2c_x->SR1 & I2C_SR1_ADDR)) {
     if (timer.isExpired())
       goto STOP;
@@ -176,40 +194,40 @@ bool i2c::read(I2C_TypeDef* i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* 
       goto CLEAR_NACK;
   }
 
-  // 5. Clear ADDR flag
+  // 8. Clear ADDR flag
   (void)i2c_x->SR1;
   (void)i2c_x->SR2;
 
-  // 6. Wait for TXE flag to be set
+  // 9. Wait for TXE flag to be set
   while (!(i2c_x->SR1 & I2C_SR1_TXE)) {
     if (timer.isExpired())
       goto STOP;
   }
 
-  // 7. Send register address
+  // 10. Send register address
   *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = reg_addr;
 
-  // 8. Wait until BTF flag is set
-  while (!(i2c_x->SR1 & I2C_SR1_BTF)) {
+  // 11. Wait until TXE flag is set
+  while (!(i2c_x->SR1 & I2C_SR1_TXE)) {
     if (timer.isExpired())
       goto STOP;
     else if (i2c_x->SR1 & I2C_SR1_AF)
       goto CLEAR_NACK;
   }
  
-  // 9. Generate RE-START condition
+  // 12. Generate RE-START condition
   i2c_x->CR1 |= I2C_CR1_START;
 
-  // 10. Wait for SB flag to be set (EV5)
+  // 13. Wait for SB flag to be set (EV5)
   while (!(i2c_x->SR1 & I2C_SR1_SB)) {
     if (timer.isExpired())
       goto STOP;
   }
 
-  // 11. Send slave address with the read bit (1)
+  // 14. Send slave address with the read bit (1)
   *reinterpret_cast<volatile uint8_t *>(&i2c_x->DR) = (dev_addr << 1) | 0x01;
 
-  // 12. Wait for ADDR flag to be set (EV6)
+  // 15. Wait for ADDR flag to be set (EV6)
   while (!(i2c_x->SR1 & I2C_SR1_ADDR)) {
     if (timer.isExpired())
       goto STOP;
@@ -217,8 +235,16 @@ bool i2c::read(I2C_TypeDef* i2c_x, uint8_t dev_addr, uint8_t reg_addr, uint8_t* 
       goto CLEAR_NACK;
   }
 
-  // 13. The implementation is different depending on the number of bytes to read
-  if (len == 1) {
+  // 16. The implementation is different depending on the number of bytes to read
+  if (len == 0) {
+    // Clear ADDR flag
+    (void)i2c_x->SR1;
+    (void)i2c_x->SR2;
+
+    // Generate STOP condition
+    i2c_x->CR1 |= I2C_CR1_STOP;
+  }
+  else if (len == 1) {
     // Disable ACK
     i2c_x->CR1 &= ~I2C_CR1_ACK;
 
