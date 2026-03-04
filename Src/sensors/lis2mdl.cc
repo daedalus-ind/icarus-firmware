@@ -26,15 +26,13 @@ bool sensors::LIS2MDL::init()
   bool result = true;
 
   // Enable I2C line, if not already enabled
-  if (!(_i2c->CR1 & I2C_CR1_PE)) {
+  if (!(_i2c->CR1 & I2C_CR1_PE))
     _i2c->CR1 |= I2C_CR1_PE;
-    time::delay(10);
-  }
 
   // Check device ID
   uint8_t who_am_i = 0;
   result &= _readReg(REG_WHO_AM_I, &who_am_i, sizeof(who_am_i));
-  result &= who_am_i == WHO_AM_I_CONTENT;
+  result &= (who_am_i == WHO_AM_I_CONTENT);
 
   // Reset the device
   result &= reset();
@@ -130,7 +128,7 @@ bool sensors::LIS2MDL::setLPF(bool enabled)
   return result;
 }
 
-std::optional<math::Vec3> sensors::LIS2MDL::getMagneticField() 
+std::optional<math::Vec3> sensors::LIS2MDL::readMagneticField() 
 {
   bool result = true;
 
@@ -142,16 +140,17 @@ std::optional<math::Vec3> sensors::LIS2MDL::getMagneticField()
     return std::nullopt;
 
   // Convert to Gauss
-  math::Vec3 mag_raw;
-  mag_raw.x = -static_cast<float>(mag_data[0]) * MAG_SENSITIVITY; // X axis is inverted
-  mag_raw.y =  static_cast<float>(mag_data[1]) * MAG_SENSITIVITY;
-  mag_raw.z =  static_cast<float>(mag_data[2]) * MAG_SENSITIVITY;
+  math::Vec3 mag_raw {
+    -static_cast<float>(mag_data[0]) * MAG_SENSITIVITY, // X axis is inverted to account for sensor orientation
+     static_cast<float>(mag_data[1]) * MAG_SENSITIVITY,
+     static_cast<float>(mag_data[2]) * MAG_SENSITIVITY
+  };
 
   // Apply calibration
   return _soft_iron_matrix * (mag_raw - _hard_iron_offset);
 }
 
-std::optional<float> sensors::LIS2MDL::getTemperature() 
+std::optional<float> sensors::LIS2MDL::readTemperature() 
 {
   bool result = true;
 
@@ -163,7 +162,7 @@ std::optional<float> sensors::LIS2MDL::getTemperature()
     return std::nullopt;
 
   // Convert to degrees Celsius
-  return static_cast<float>(temp_data) * TEMP_SENSITIVITY;
+  return static_cast<float>(temp_data) * TEMP_SENSITIVITY + TEMP_OFFSET;
 }
 
 inline bool sensors::LIS2MDL::_softReset() 
@@ -232,10 +231,10 @@ inline bool sensors::LIS2MDL::_enableBDU()
 
 inline bool sensors::LIS2MDL::_writeReg(uint8_t reg_addr, const uint8_t* data, uint16_t size) 
 {
-  return i2c::write(_i2c, _address, reg_addr, data, size, 10);
+  return i2c::write(_i2c, _address, reg_addr, data, size, _timeout);
 }
 
 inline bool sensors::LIS2MDL::_readReg(uint8_t reg_addr, uint8_t* data, uint16_t size) 
 {
-  return i2c::read(_i2c, _address, reg_addr, data, size, 10);
+  return i2c::read(_i2c, _address, reg_addr, data, size, _timeout);
 }

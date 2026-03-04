@@ -43,7 +43,7 @@ bool sensors::ADXL375::init()
   return result;
 }
 
-bool sensors::ADXL375::setStandbyMode(bool enable) 
+bool sensors::ADXL375::setMode(Mode mode) 
 {
   bool result = true; 
 
@@ -52,7 +52,7 @@ bool sensors::ADXL375::setStandbyMode(bool enable)
   result &= _readReg(REG_POWER_CTL, reinterpret_cast<uint8_t *>(&power_ctl), sizeof(power_ctl));
 
   // Change the measure bit accordingly
-  power_ctl.measure = enable ? 0 : 1; 
+  power_ctl.measure = mode;
 
   // Write back the updated power control register
   result &= _writeReg(REG_POWER_CTL, reinterpret_cast<uint8_t *>(&power_ctl), sizeof(power_ctl));
@@ -77,7 +77,7 @@ bool sensors::ADXL375::setODR(ODR odr)
   return result;
 }
 
-std::optional<math::Vec3> sensors::ADXL375::getAcceleration() 
+std::optional<math::Vec3> sensors::ADXL375::readAcceleration() 
 {
   bool result = true; 
 
@@ -88,20 +88,19 @@ std::optional<math::Vec3> sensors::ADXL375::getAcceleration()
   if (!result) 
     return std::nullopt;
 
-  math::Vec3 accel;
-  // Convert raw data to g's
-  accel.x = static_cast<float>(raw_data[0]) * DATA_SENSITIVITY;
-  accel.y = static_cast<float>(raw_data[1]) * DATA_SENSITIVITY;
-  accel.z = static_cast<float>(raw_data[2]) * DATA_SENSITIVITY;
-  return accel;
+  return math::Vec3 { 
+    static_cast<float>(raw_data[0]) * DATA_SENSITIVITY,
+    static_cast<float>(raw_data[1]) * DATA_SENSITIVITY,
+    static_cast<float>(raw_data[2]) * DATA_SENSITIVITY
+  };
 }
 
 inline bool sensors::ADXL375::_writeReg(uint8_t reg_addr, const uint8_t* data, uint16_t size)
 {
-  return i2c::write(_i2c, _address, reg_addr, data, size, 2);
+  return i2c::write(_i2c, _address, reg_addr, data, size, _timeout);
 }
 
 inline bool sensors::ADXL375::_readReg(uint8_t reg_addr, uint8_t* data, uint16_t size)
 {
-  return i2c::read(_i2c, _address, reg_addr, data, size, 2);
+  return i2c::read(_i2c, _address, reg_addr, data, size, _timeout);
 }

@@ -29,7 +29,7 @@ bool sensors::ICM_45686::init()
     _spi->CR1 |= SPI_CR1_SPE;
  
   // Configure 4 wire SPI interface
-  INTFConfig1Ovrd intf_config1_ovrd = {};
+  INTFConfig1Ovrd intf_config1_ovrd{};
   intf_config1_ovrd.ap_spi_34_mode_ovrd = 1;
   intf_config1_ovrd.ap_spi_34_mode_ovrd_val = SPI34Mode::Mode4Wire;
   result &= _writeReg(REG_INTF_CONFIG1_OVRD, reinterpret_cast<uint8_t *>(&intf_config1_ovrd), sizeof(intf_config1_ovrd));
@@ -60,7 +60,7 @@ bool sensors::ICM_45686::softReset()
   result &= _readReg(REG_INTF_CONFIG0, reinterpret_cast<uint8_t *>(&intf_config0), sizeof(intf_config0));
 
   // Trigger soft reset
-  Misc2 misc2 = {};
+  Misc2 misc2{};
   misc2.soft_rst = 1;
   result &= _writeReg(REG_MISC2, reinterpret_cast<uint8_t *>(&misc2), sizeof(misc2));
 
@@ -74,19 +74,19 @@ bool sensors::ICM_45686::softReset()
   result &= _writeReg(REG_INTF_CONFIG1_OVRD, reinterpret_cast<uint8_t *>(&intf_config1_ovrd), sizeof(intf_config1_ovrd));
 
   // Clear the RESET_DONE interrupt
-  INT1Status0 int1_status0 = {};
+  INT1Status0 int1_status0{};
   result &= _readReg(REG_INT1_STATUS0, reinterpret_cast<uint8_t *>(&int1_status0), sizeof(int1_status0));
   result &= (int1_status0.reset_done == 1); 
 
   return result; 
 }
 
-bool sensors::ICM_45686::enableAccelerometer(AccelODR odr, AccelFS fs) 
+bool sensors::ICM_45686::enableAccelerometer(ODR odr, AccelFS fs) 
 {
   bool result = true;
 
   // Set ODR and scale
-  AccelConfig0 accel_config0 = {};
+  AccelConfig0 accel_config0{};
   accel_config0.odr = odr;
   accel_config0.fs_sel = fs;
 
@@ -113,7 +113,7 @@ bool sensors::ICM_45686::enableAccelerometer(AccelODR odr, AccelFS fs)
   }
 
   // Set accelerometer to Low Noise mode
-  PwrMgmt0 pwr_mgmt0 = {};
+  PwrMgmt0 pwr_mgmt0{};
   result &= _readReg(REG_PWR_MGMT_0, reinterpret_cast<uint8_t *>(&pwr_mgmt0), sizeof(pwr_mgmt0));
 
   pwr_mgmt0.accel_mode = AccelMode::LowNoise;
@@ -123,12 +123,12 @@ bool sensors::ICM_45686::enableAccelerometer(AccelODR odr, AccelFS fs)
   return result;
 }
 
-bool sensors::ICM_45686::enableGyroscope(GyroODR odr, GyroFS fs) 
+bool sensors::ICM_45686::enableGyroscope(ODR odr, GyroFS fs) 
 {
   bool result = true;
 
   // Set ODR and scale
-  GyroConfig0 gyro_config0 = {};
+  GyroConfig0 gyro_config0{};
   gyro_config0.odr = odr;
   gyro_config0.fs_sel = fs;
 
@@ -167,7 +167,7 @@ bool sensors::ICM_45686::enableGyroscope(GyroODR odr, GyroFS fs)
   }
 
   // Set gyroscope to Low Noise mode
-  PwrMgmt0 pwr_mgmt0 = {};
+  PwrMgmt0 pwr_mgmt0{};
   result &= _readReg(REG_PWR_MGMT_0, reinterpret_cast<uint8_t *>(&pwr_mgmt0), sizeof(pwr_mgmt0));
 
   pwr_mgmt0.gyro_mode = GyroMode::LowNoise;
@@ -182,7 +182,7 @@ bool sensors::ICM_45686::calibrateGyroscope(size_t samples)
   math::Vec3 sum = math::Vec3::zero();
 
   for (size_t i = 0; i < samples; ++i) {
-    auto gyro = getGyroscope();
+    auto gyro = readGyroscope();
     if (!gyro.has_value())
       return false;
     sum = sum + gyro.value();
@@ -195,7 +195,7 @@ bool sensors::ICM_45686::calibrateGyroscope(size_t samples)
   return true;
 }
 
-std::optional<math::Vec3> sensors::ICM_45686::getAcceleration() 
+std::optional<math::Vec3> sensors::ICM_45686::readAcceleration() 
 {
   bool result = true;
 
@@ -205,14 +205,14 @@ std::optional<math::Vec3> sensors::ICM_45686::getAcceleration()
   if (!result)
     return std::nullopt;
 
-  math::Vec3 accel;
-  accel.x = accel_data[0] * _accel_scale - _accel_bias.x;
-  accel.y = accel_data[1] * _accel_scale - _accel_bias.y;
-  accel.z = accel_data[2] * _accel_scale - _accel_bias.z;
-  return accel;
+  return math::Vec3 {
+  accel_data[0] * _accel_scale - _accel_bias.x,
+  accel_data[1] * _accel_scale - _accel_bias.y,
+  accel_data[2] * _accel_scale - _accel_bias.z
+  };
 }
 
-std::optional<math::Vec3> sensors::ICM_45686::getGyroscope() 
+std::optional<math::Vec3> sensors::ICM_45686::readGyroscope() 
 {
   bool result = true;
 
@@ -222,11 +222,11 @@ std::optional<math::Vec3> sensors::ICM_45686::getGyroscope()
   if (!result)
     return std::nullopt;
 
-  math::Vec3 gyro;
-  gyro.x = gyro_data[0] * _gyro_scale - _gyro_bias.x;
-  gyro.y = gyro_data[1] * _gyro_scale - _gyro_bias.y;
-  gyro.z = gyro_data[2] * _gyro_scale - _gyro_bias.z;
-  return gyro;
+  return math::Vec3 {
+  gyro_data[0] * _gyro_scale - _gyro_bias.x,
+  gyro_data[1] * _gyro_scale - _gyro_bias.y,
+  gyro_data[2] * _gyro_scale - _gyro_bias.z
+  };
 }
 
 bool sensors::ICM_45686::enableFIFO() 
@@ -234,24 +234,24 @@ bool sensors::ICM_45686::enableFIFO()
   bool result = true;
 
   // Set FIFO depth to 2K bytes
-  FIFOConfig0 fifo_config0 = {};
+  FIFOConfig0 fifo_config0{};
   fifo_config0.depth = FIFODepth::Depth2K;
   result &= _writeReg(REG_FIFO_CONFIG0, reinterpret_cast<uint8_t *>(&fifo_config0), sizeof(fifo_config0));
 
   // Enable high resolution FIFO
-  FIFOConfig3 fifo_config3 = {};
+  FIFOConfig3 fifo_config3{};
   fifo_config3.hires_en = 1;
   result &= _writeReg(REG_FIFO_CONFIG3, reinterpret_cast<uint8_t *>(&fifo_config3), sizeof(fifo_config3));
 
   // Enable timestamp in FIFO
-  FIFOConfig4 fifo_config4 = {};
+  FIFOConfig4 fifo_config4{};
   fifo_config4.fifo_tmst_fsync_en = 1;
   result &= _writeReg(REG_FIFO_CONFIG4, reinterpret_cast<uint8_t *>(&fifo_config4), sizeof(fifo_config4));
 
   // Enable timestamp
-  SMCControl0 smc_control0 = {};
+  SMCControl0 smc_control0{};
   result &= _readReg(REG_SMC_CONTROL_0, reinterpret_cast<uint8_t *>(&smc_control0), sizeof(smc_control0));
-  LL_mDelay(1); // Wait at least 4 us after accessing indirect registers
+  time::delay(1); // Wait at least 4 us after accessing indirect registers
 
   smc_control0.tmst_fsync_en = 1;
 
@@ -267,7 +267,7 @@ bool sensors::ICM_45686::enableFIFO()
   return result;
 }
 
-std::optional<uint16_t> sensors::ICM_45686::getFIFOCount() 
+std::optional<uint16_t> sensors::ICM_45686::readFIFOCount() 
 {
   bool result = true;
 
@@ -286,12 +286,12 @@ std::optional<uint16_t> sensors::ICM_45686::getFIFOCount()
   return count;
 }
 
-std::optional<std::pair<math::Vec3, math::Vec3>> sensors::ICM_45686::getLatestFIFOData() 
+std::optional<std::pair<math::Vec3, math::Vec3>> sensors::ICM_45686::readLatestFIFOData() 
 {
   bool result = true;
 
   // Get current FIFO count
-  auto fifo_count_opt = getFIFOCount();
+  auto fifo_count_opt = readFIFOCount();
 
   if (!fifo_count_opt.has_value() || fifo_count_opt.value() < 1)
     return std::nullopt;
@@ -338,18 +338,20 @@ std::optional<std::pair<math::Vec3, math::Vec3>> sensors::ICM_45686::getLatestFI
 
   // Convert to float and compensate for bias
   constexpr float ACCEL_SCALE = 0.00006103515625f; // 32G / 2^19
-  math::Vec3 accel;
-  accel.x = static_cast<float>(accel_x) * ACCEL_SCALE - _accel_bias.x;
-  accel.y = static_cast<float>(accel_y) * ACCEL_SCALE - _accel_bias.y;
-  accel.z = static_cast<float>(accel_z) * ACCEL_SCALE - _accel_bias.z;
+  math::Vec3 accel{
+  static_cast<float>(accel_x) * ACCEL_SCALE - _accel_bias.x,
+  static_cast<float>(accel_y) * ACCEL_SCALE - _accel_bias.y,
+  static_cast<float>(accel_z) * ACCEL_SCALE - _accel_bias.z
+  };
 
   constexpr float GYRO_SCALE = 0.0076293945f; // 4000DPS / 2^19
-  math::Vec3 gyro;
-  gyro.x = static_cast<float>(gyro_x) * GYRO_SCALE - _gyro_bias.x;
-  gyro.y = static_cast<float>(gyro_y) * GYRO_SCALE - _gyro_bias.y;
-  gyro.z = static_cast<float>(gyro_z) * GYRO_SCALE - _gyro_bias.z;
+  math::Vec3 gyro{
+    static_cast<float>(gyro_x) * GYRO_SCALE - _gyro_bias.x,
+    static_cast<float>(gyro_y) * GYRO_SCALE - _gyro_bias.y,
+    static_cast<float>(gyro_z) * GYRO_SCALE - _gyro_bias.z
+  };
 
-  return std::make_pair(accel, gyro);
+  return {{accel, gyro}};
 }
 
 bool sensors::ICM_45686::_writeReg(uint16_t reg, const uint8_t *data, uint16_t size) 
@@ -357,7 +359,7 @@ bool sensors::ICM_45686::_writeReg(uint16_t reg, const uint8_t *data, uint16_t s
   bool result = true; 
 
   _cs_pin.select();
-  result &= spi::write(_spi, reg, data, size, 10);
+  result &= spi::write(_spi, reg, data, size, _timeout);
   _cs_pin.deselect();
 
   return result;
@@ -368,7 +370,7 @@ bool sensors::ICM_45686::_readReg(uint16_t reg, uint8_t *data, uint16_t size)
   bool rslt = true;
 
   _cs_pin.select();
-  rslt &= spi::read(_spi, reg | 0x80, data, size, 10);
+  rslt &= spi::read(_spi, reg | 0x80, data, size, _timeout);
   _cs_pin.deselect();
 
   return rslt;

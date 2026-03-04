@@ -32,8 +32,8 @@ namespace sensors {
    */
   class ICM_45686 {
   public: 
-    ICM_45686(SPI_TypeDef* spi, GPIO_TypeDef* cs_port, uint32_t cs_pin)
-      : _spi{spi}, _cs_pin{cs_port, cs_pin} {}
+    ICM_45686(SPI_TypeDef* spi, GPIO_TypeDef* cs_port, uint32_t cs_pin, uint32_t timeout = DEFAULT_TIMEOUT)
+      : _spi{spi}, _cs_pin{cs_port, cs_pin}, _timeout{timeout} {}
 
     /**
      * @brief Initialize the ICM-45686 sensor.
@@ -51,7 +51,7 @@ namespace sensors {
      * @brief Verify the identity of the ICM-45686 sensor.
      * @return `true` if the sensor identity is correct, `false` otherwise.
      */
-    bool enableAccelerometer(icm::AccelODR odr, icm::AccelFS fs);
+    bool enableAccelerometer(icm::ODR odr, icm::AccelFS fs);
 
     /**
      * @brief Enable the gyroscope.
@@ -59,7 +59,7 @@ namespace sensors {
      * @param fs The full scale range to set.
      * @return `true` if the gyroscope was enabled successfully, `false` otherwise.
      */
-    bool enableGyroscope(icm::GyroODR odr, icm::GyroFS fs);
+    bool enableGyroscope(icm::ODR odr, icm::GyroFS fs);
     
     /**
      * @brief Calibrate the gyroscope by computing the bias over a number of samples.
@@ -73,14 +73,14 @@ namespace sensors {
      * @param accel Reference to a Vec3 object to store the accelerometer readings.
      * @return `true` if the readings were successfully retrieved, `false` otherwise.
      */
-    std::optional<math::Vec3> getAcceleration();
+    std::optional<math::Vec3> readAcceleration();
 
     /**
      * @brief Get the current gyroscope readings.
      * @param gyro Reference to a Vec3 object to store the gyroscope readings.
      * @return `true` if the readings were successfully retrieved, `false` otherwise.
      */
-    std::optional<math::Vec3> getGyroscope();
+    std::optional<math::Vec3> readGyroscope();
 
     /**
      * @brief Enable the FIFO buffer for accelerometer and gyroscope data.
@@ -92,18 +92,21 @@ namespace sensors {
      * @brief Get the current number of samples in the FIFO buffer.
      * @return An optional uint16_t containing the FIFO sample count, or std::nullopt if the read failed.
      */
-    std::optional<uint16_t> getFIFOCount();
+    std::optional<uint16_t> readFIFOCount();
 
     /**
      * @brief Retrieve the latest accelerometer and gyroscope data from the FIFO buffer.
      * @return An optional pair of Vec3 objects containing the accelerometer and gyroscope data,
      *         or std::nullopt if the read operation fails.
      */
-    std::optional<std::pair<math::Vec3, math::Vec3>> getLatestFIFOData();
+    std::optional<std::pair<math::Vec3, math::Vec3>> readLatestFIFOData();
 
-  private: 
+  private:
+    static constexpr uint32_t DEFAULT_TIMEOUT = 10;
+  
     SPI_TypeDef* _spi;
     spi::ChipSelectPin _cs_pin;
+    uint32_t _timeout;
 
     float _accel_scale = 0.0f;
     float _gyro_scale = 0.0f;
@@ -117,4 +120,4 @@ namespace sensors {
 
 }
 
-#endif /* __ICM_45686_HH__ */
+#endif // __ICM_45686_HH__

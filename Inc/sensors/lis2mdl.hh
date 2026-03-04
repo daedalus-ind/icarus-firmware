@@ -22,6 +22,7 @@
 #include "math/vec3.hh"
 #include "math/mat3x3.hh"
 
+#include <cstdint>
 #include <optional>
 
 namespace sensors {
@@ -31,8 +32,8 @@ namespace sensors {
    */
   class LIS2MDL {
   public: 
-    LIS2MDL(I2C_TypeDef* i2c, uint8_t address = 0x1E) 
-      : _i2c{i2c}, _address{address} {}
+    LIS2MDL(I2C_TypeDef* i2c, uint8_t address = lismdl::I2C_ADDRESS, uint32_t timeout = DEFAULT_TIMEOUT) 
+      : _i2c{i2c}, _address{address}, _timeout{timeout} {}
 
     /**
      * @brief Initialize the LIS2MDL sensor.
@@ -81,18 +82,21 @@ namespace sensors {
      * @return An optional `math::Vec3` containing the magnetic field data in
      *         microteslas (µT), or `std::nullopt` if the read operation fails.
      */
-    std::optional<math::Vec3> getMagneticField();
+    std::optional<math::Vec3> readMagneticField();
 
     /**
      * @brief Retrieve the current temperature from the LIS2MDL sensor.
      * @return An optional `float` containing the temperature in degrees Celsius,
      *         or `std::nullopt` if the read operation fails.
      */
-    std::optional<float> getTemperature();
+    std::optional<float> readTemperature();
 
   private: 
+    static constexpr uint32_t DEFAULT_TIMEOUT = 10;
+
     I2C_TypeDef* _i2c;
     uint8_t _address; 
+    uint32_t _timeout;
 
     math::Mat3x3 _soft_iron_matrix = math::Mat3x3::identity();
     math::Vec3 _hard_iron_offset = math::Vec3::zero();
@@ -108,4 +112,4 @@ namespace sensors {
 
 }
 
-#endif /* __SENSORS_LIS2MDL_HH__ */
+#endif // __LIS2MDL_HH__

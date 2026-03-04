@@ -32,8 +32,8 @@ namespace sensors {
    */
   class MS5607 {
   public:
-    MS5607(SPI_TypeDef* spi, GPIO_TypeDef* cs_port, uint32_t cs_pin) 
-      : _spi{spi}, _cs_pin{cs_port, cs_pin} {}
+    MS5607(SPI_TypeDef* spi, GPIO_TypeDef* cs_port, uint32_t cs_pin, uint32_t timeout = DEFAULT_TIMEOUT) 
+      : _spi{spi}, _cs_pin{cs_port, cs_pin}, _timeout{timeout} {}
 
     /**
      * @brief Initializes the MS5607 sensor.
@@ -70,8 +70,11 @@ namespace sensors {
     std::pair<float, float> compensate(uint32_t raw_pressure, uint32_t raw_temperature);
 
   private:
+    static constexpr uint32_t DEFAULT_TIMEOUT = 10;
+
     SPI_TypeDef *_spi;
     spi::ChipSelectPin _cs_pin;
+    uint32_t _timeout;
 
     uint16_t _prom[8];
     int32_t _T_ref;
@@ -128,4 +131,4 @@ namespace sensors {
 
 } 
 
-#endif /* __SENSORS_MS5607_HH__ */
+#endif // __MS5607_HH__

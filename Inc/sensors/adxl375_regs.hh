@@ -28,8 +28,8 @@ namespace sensors {
     constexpr uint8_t I2C_ADDRESS = 0x53;
 
     /*************************************
-    * @defgroup Output Data Rates (ODR) *
-    *************************************/
+     * @defgroup Output Data Rates (ODR) *
+     *************************************/
     enum class ODR : uint8_t {
       Hz_3200       = 0x0F,
       Hz_1600       = 0x0E,
@@ -50,14 +50,14 @@ namespace sensors {
     };
     
     /*********************************
-    * @defgroup Device ID register. *
-    *********************************/
+     * @defgroup Device ID register. *
+     *********************************/
     constexpr uint8_t REG_DEVID     = 0x00;
     constexpr uint8_t DEVID_CONTENT = 0xE5;
 
     /******************************
-    * @defgroup Offset Registers *
-    ******************************/
+     * @defgroup Offset Registers *
+     ******************************/
     constexpr uint8_t REG_OFSX = 0x1E;
     constexpr uint8_t REG_OFSY = 0x1F; 
     constexpr uint8_t REG_OFSZ = 0x20; 
@@ -66,8 +66,8 @@ namespace sensors {
     constexpr float OFS_SENSITIVITY = 0.196f; 
 
     /*****************************
-    * @defgroup Shock Registers *
-    *****************************/
+     * @defgroup Shock Registers *
+     *****************************/
     constexpr uint8_t REG_SHOCK_THRESHOLD  = 0x1D;
     constexpr uint8_t REG_SHOCK_DUR        = 0x21;
     constexpr uint8_t REG_SHOCK_LATENCY    = 0x22;
@@ -76,8 +76,8 @@ namespace sensors {
     constexpr uint8_t REG_ACT_SHOCK_STATUS = 0x2B;
 
     /********************************
-    * @defgroup Activity Registers *
-    ********************************/
+     * @defgroup Activity Registers *
+     ********************************/
     constexpr uint8_t REG_THRESH_ACT   = 0x24;
     constexpr uint8_t REG_THRESH_INACT = 0x25;
 
@@ -88,47 +88,51 @@ namespace sensors {
     constexpr uint8_t REG_ACT_INACT_CTL = 0x27;
 
     /*******************************
-    * @defgroup Control Registers *
-    *******************************/
+     * @defgroup Control Registers *
+     *******************************/
     constexpr uint8_t REG_BW_RATE = 0x2C; 
     struct BWRate {
-      ODR rate : 4; 
+      ODR rate          : 4; 
       uint8_t low_power : 1; 
-      uint8_t reserved : 3; // Always 0
+      uint8_t reserved  : 3; // Always 0
     }; 
 
     constexpr uint8_t REG_POWER_CTL = 0x2D; 
+    enum class Mode : uint8_t {
+      Standby     = 0,
+      Measurement = 1
+    };
     struct PowerCtl {
-      uint8_t weakeup : 2;   
-      uint8_t sleep : 1;    
-      uint8_t measure : 1;    
+      uint8_t weakeup   : 2;   
+      uint8_t sleep     : 1;    
+      Mode measure      : 1;    
       uint8_t autosleep : 1;
-      uint8_t link : 1;      
-      uint8_t reserved : 2; // Always 0
+      uint8_t link      : 1;      
+      uint8_t reserved  : 2; // Always 0
     };
 
     constexpr uint8_t REG_DATA_FORMAT = 0x31; 
     // Default value for DATA_FORMAT register
     constexpr uint8_t DATA_FORMAT_RESET_VAL = 0x0B;
     struct DataFormat {
-      uint8_t reserved1 : 2;  // Always 0x03
-      uint8_t justify : 1;    
-      uint8_t reserved2 : 2;  // Always 0x01
+      uint8_t reserved1  : 2;  // Always 0x03
+      uint8_t justify    : 1;    
+      uint8_t reserved2  : 2;  // Always 0x01
       uint8_t int_invert : 1;
-      uint8_t spi : 1;        
-      uint8_t self_test : 1;
+      uint8_t spi        : 1;        
+      uint8_t self_test  : 1;
     };
 
     /*********************************
-    * @defgroup Interrupt Registers *
-    *********************************/
+     * @defgroup Interrupt Registers *
+     *********************************/
     constexpr uint8_t REG_INT_ENABLE = 0x2E; 
     constexpr uint8_t REG_INT_MAP    = 0x2F;    
     constexpr uint8_t REG_INT_SOURCE = 0x30; 
 
     /****************************
-    * @defgroup Data Registers *
-    ****************************/
+     * @defgroup Data Registers *
+     ****************************/
     constexpr uint8_t REG_DATAX0 = 0x32;
     constexpr uint8_t REG_DATAX1 = 0x33;
     constexpr uint8_t REG_DATAY0 = 0x34;
@@ -140,8 +144,8 @@ namespace sensors {
     constexpr float DATA_SENSITIVITY = 0.04805f;
 
     /****************************
-    * @defgroup FIFO Registers *
-    ****************************/
+     * @defgroup FIFO Registers *
+     ****************************/
     constexpr uint8_t REG_FIFO_CTL    = 0x38;    
     constexpr uint8_t REG_FIFO_STATUS = 0x39;
 

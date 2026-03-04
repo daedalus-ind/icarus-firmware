@@ -63,4 +63,4 @@ namespace sensors {
 
 } 
 
-#endif /* __MS5607_REGS_HH__ */
+#endif // __MS5607_REGS_HH__

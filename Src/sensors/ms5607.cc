@@ -38,7 +38,7 @@ bool sensors::MS5607::reset()
   bool result = true;
 
   _cs_pin.select();
-  result &= spi::write(_spi, CMD_RESET, nullptr, 0, 10);
+  result &= spi::write(_spi, CMD_RESET, nullptr, 0, _timeout);
   /**
    * @note AN520 
    * Wait 3 ms after sending the reset command.
@@ -70,22 +70,6 @@ bool sensors::MS5607::startADC(SensorType sensor_type, OSR osr)
   // Write conversion command
   uint8_t cmd = CMD_ADC_CONV + static_cast<uint8_t>(sensor_type) + static_cast<uint8_t>(osr);
   result &= _writeReg(cmd, nullptr, 0);
-
-  return result;
-}
-
-inline bool sensors::MS5607::_readPROM() 
-{
-  bool result = true;
-
-  for (uint8_t i = 0; i < 8; i++) {
-    // Read each coefficient data
-    uint8_t coeff_data[2];
-    result &= _readReg(CMD_READ_PROM + (i * 2), coeff_data, sizeof(coeff_data));
-
-    // Save the 16 bit coefficient
-    _prom[i] = static_cast<uint16_t>((coeff_data[0] << 8) + coeff_data[1]);
-  }
 
   return result;
 }
@@ -123,7 +107,23 @@ std::pair<float, float> sensors::MS5607::compensate(uint32_t raw_pressure, uint3
   float temperature = (2000 + ((static_cast<uint64_t>(_prom[6]) * dT) >> 23)) * 0.01f; // T = 2000 + (C6 * dT) / 2^23
   float pressure = ((((raw_pressure * SENS) >> 21) - OFF) >> 15) * 0.01f;              // P = ((D1 * SENS) / 2^21 - OFF) / 2^15
 
-  return std::make_pair(pressure, temperature);
+  return {pressure, temperature};
+}
+
+inline bool sensors::MS5607::_readPROM() 
+{
+  bool result = true;
+
+  for (uint8_t i = 0; i < 8; i++) {
+    // Read each coefficient data
+    uint8_t coeff_data[2];
+    result &= _readReg(CMD_READ_PROM + (i * 2), coeff_data, sizeof(coeff_data));
+
+    // Save the 16 bit coefficient
+    _prom[i] = static_cast<uint16_t>((coeff_data[0] << 8) + coeff_data[1]);
+  }
+
+  return result;
 }
 
 inline uint8_t sensors::MS5607::_calCRC4() 
@@ -162,7 +162,7 @@ bool sensors::MS5607::_writeReg(uint8_t reg_addr, const uint8_t* data, uint16_t 
   bool result = true;
 
   _cs_pin.select();
-  result &= spi::write(_spi, reg_addr, data, size, 10);
+  result &= spi::write(_spi, reg_addr, data, size, _timeout);
   _cs_pin.deselect();
 
   return result;
@@ -173,7 +173,7 @@ bool sensors::MS5607::_readReg(uint8_t reg_addr, uint8_t* data, uint16_t size)
   bool result = true;
 
   _cs_pin.select();
-  result &= spi::read(_spi, reg_addr, data, size, 10);
+  result &= spi::read(_spi, reg_addr, data, size, _timeout);
   _cs_pin.deselect();
 
   return result;
@@ -192,9 +192,7 @@ bool sensors::MS5607_FSM::init(OSR pressure_osr, OSR temperature_osr)
   return result;
 }
 
-#define OSR_TO_INDEX(osr) (static_cast<uint8_t>(osr) >> 1)
-
-static constexpr uint8_t OSR_to_index(sensors::ms::OSR osr) 
+static constexpr uint8_t osr_to_index(sensors::ms::OSR osr) 
 {
   return static_cast<uint8_t>(osr) >> 1;
 }
@@ -202,7 +200,7 @@ static constexpr uint8_t OSR_to_index(sensors::ms::OSR osr)
 std::optional<std::pair<float, float>> sensors::MS5607_FSM::process()
 {
   // Wait times in ms for different oversampling rates
-  constexpr static uint32_t wait_times[5] = {1, 2, 3, 5, 10};
+  static constexpr uint32_t WAIT_TIMES[5] = {1, 2, 3, 5, 10};
 
   bool result = true;
   switch (_state) {
@@ -210,7 +208,7 @@ std::optional<std::pair<float, float>> sensors::MS5607_FSM::process()
     // Start pressure conversion
     result &= _sensor.startADC(SensorType::Pressure, _pressure_osr);
     if (result) {
-      _timer.start(wait_times[OSR_to_index(_pressure_osr)]);
+      _timer.start(WAIT_TIMES[osr_to_index(_pressure_osr)]);
       _state = State::WaitPressure;
     }
     break;
@@ -219,18 +217,18 @@ std::optional<std::pair<float, float>> sensors::MS5607_FSM::process()
     // Wait for pressure conversion to complete
     if (_timer.isExpired()) {
       auto pressure_opt = _sensor.readADC();
-      if (!pressure_opt.has_value()) {
-        _state = State::Idle;
-      } else {
+      if (pressure_opt) {
         _raw_pressure = pressure_opt.value();
         // Start temperature conversion
         result &= _sensor.startADC(SensorType::Temperature, _temperature_osr);
         if (result) {
-          _timer.start(wait_times[OSR_to_index(_temperature_osr)]);
+          _timer.start(WAIT_TIMES[osr_to_index(_temperature_osr)]);
           _state = State::WaitTemperature;
         } else {
           _state = State::Idle;
         }
+      } else {
+        _state = State::Idle;
       }
     }
     break;
@@ -239,12 +237,11 @@ std::optional<std::pair<float, float>> sensors::MS5607_FSM::process()
     // Wait for temperature conversion to complete
     if (_timer.isExpired()) {
       _state = State::Idle;
-      auto temperature_opt = _sensor.readADC();
       // Compensate and get final values
-      if (temperature_opt.has_value()) {
+      auto temperature_opt = _sensor.readADC();
+      if (temperature_opt) {
         _raw_temperature = temperature_opt.value();
-        auto compensated = _sensor.compensate(_raw_pressure, _raw_temperature);
-        return compensated;
+        return _sensor.compensate(_raw_pressure, _raw_temperature);
       }
     }
     break;

@@ -24,9 +24,12 @@ namespace sensors {
 
   namespace lismdl {
 
+    // Default I2C address of the LIS2MDL sensor
+    constexpr uint8_t I2C_ADDRESS = 0x1E;
+
     /*********************************
-    * @defgroup Hard-iron registers *
-    *********************************/
+     * @defgroup Hard-iron registers *
+     *********************************/
     constexpr uint8_t REG_OFFSET_X_L = 0x45;
     constexpr uint8_t REG_OFFSET_X_H = 0x46;
     constexpr uint8_t REG_OFFSET_Y_L = 0x47;
@@ -35,19 +38,19 @@ namespace sensors {
     constexpr uint8_t REG_OFFSET_Z_H = 0x4A;
 
     /********************************
-    * @defgroup Device ID register *
-    ********************************/
+     * @defgroup Device ID register *
+     ********************************/
     constexpr uint8_t REG_WHO_AM_I     = 0x4F;
     constexpr uint8_t WHO_AM_I_CONTENT = 0x40;
 
     /*************************************
-    * @defgroup Configuration registers *
-    *************************************/
+     * @defgroup Configuration registers *
+     *************************************/
     constexpr uint8_t REG_CFG_A = 0x60;
 
     /*******************************************
-    * @defgroup Output data rate (ODR) values *
-    *******************************************/
+     * @defgroup Output data rate (ODR) values *
+     *******************************************/
     enum class ODR : uint8_t {
       Hz_10  = 0x00,
       Hz_20  = 0x01,
@@ -56,8 +59,8 @@ namespace sensors {
     };
 
     /********************************
-    * @defgroup Modes of operation *
-    ********************************/
+     * @defgroup Modes of operation *
+     ********************************/
     enum class Mode : uint8_t {
       Continuous = 0x00,
       Single     = 0x01, 
@@ -96,8 +99,8 @@ namespace sensors {
     };
 
     /*********************************
-    * @defgroup Interrupt registers *
-    *********************************/
+     * @defgroup Interrupt registers *
+     *********************************/
     constexpr uint8_t REG_INT_CRTL = 0x63;
     struct IntCrtl {
       uint8_t ien : 1;
@@ -110,8 +113,8 @@ namespace sensors {
     };
 
     /*****************************
-    * @defgroup Status register *
-    *****************************/
+     * @defgroup Status register *
+     *****************************/
     constexpr uint8_t REG_STATUS = 0x67;
     struct Status {
       uint8_t xda : 1;
@@ -125,8 +128,8 @@ namespace sensors {
     };
 
     /******************************
-    * @defgroup Output registers *
-    ******************************/
+     * @defgroup Output registers *
+     ******************************/
     constexpr uint8_t REG_OUTX_L = 0x68;
     constexpr uint8_t REG_OUTX_H = 0x69;
     constexpr uint8_t REG_OUTY_L = 0x6A;
@@ -138,16 +141,18 @@ namespace sensors {
     constexpr float MAG_SENSITIVITY = 0.15f;
 
     /******************************************
-    * @defgroup Temperature sensor registers *
-    ******************************************/
+     * @defgroup Temperature sensor registers *
+     ******************************************/
     constexpr uint8_t REG_TEMP_OUT_L = 0x6E;
     constexpr uint8_t REG_TEMP_OUT_H = 0x6F;
 
-    /* Sensitivity of temperature output registers in degrees Celsius/LSB */
+    // Sensitivity of temperature output registers in degrees Celsius/LSB
     constexpr float TEMP_SENSITIVITY = 0.125f;
+    // Offset to convert raw temperature reading to degrees Celsius
+    constexpr float TEMP_OFFSET = 25.0f; 
 
   } 
 
 }
 
-#endif /* __LIS2MDL_REGS_HH__ */
+#endif // __LIS2MDL_REGS_HH__

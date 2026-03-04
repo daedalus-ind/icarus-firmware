@@ -22,6 +22,7 @@
 #include "adxl375_regs.hh"
 #include "math/vec3.hh"
 
+#include <cstdint>
 #include <optional>
 
 namespace sensors {
@@ -31,8 +32,8 @@ namespace sensors {
    */
   class ADXL375 {
   public: 
-    ADXL375(I2C_TypeDef* i2c, uint8_t address = adxl::I2C_ADDRESS)
-      : _i2c{i2c}, _address{address} {}
+    ADXL375(I2C_TypeDef* i2c, uint8_t address = adxl::I2C_ADDRESS, uint32_t timeout = DEFAULT_TIMEOUT)
+      : _i2c{i2c}, _address{address}, _timeout{timeout} {}
     
     /**
      * @brief Initializes the ADXL375 sensor.
@@ -41,11 +42,11 @@ namespace sensors {
     bool init();
 
     /**
-     * @brief Sets the standby mode of the ADXL375 sensor.
-     * @param enabled `true` to enable standby mode, `false` to disable it.
+     * @brief Sets the operating mode of the ADXL375 sensor.
+     * @param mode The desired operating mode (`Standby` or `Measurement`).
      * @return `true` if the operation is successful, `false` otherwise.
      */
-    bool setStandbyMode(bool enabled);
+    bool setMode(adxl::Mode mode);
 
     /**
      * @brief Sets the output data rate (ODR) of the ADXL375 sensor.
@@ -59,11 +60,14 @@ namespace sensors {
      * @return An optional `math::Vec3` containing the acceleration data in g's,
      *         or `std::nullopt` if the read operation fails.
      */
-    std::optional<math::Vec3> getAcceleration();
+    std::optional<math::Vec3> readAcceleration();
 
   private: 
+    static constexpr uint32_t DEFAULT_TIMEOUT = 2;
+
     I2C_TypeDef* _i2c;
     uint8_t _address;
+    uint32_t _timeout;
 
     inline bool _writeReg(uint8_t reg_addr, const uint8_t* data, uint16_t size); 
     inline bool _readReg(uint8_t reg_addr, uint8_t* data, uint16_t size);
@@ -71,4 +75,4 @@ namespace sensors {
 
 } 
 
-#endif /* __ADXL375_HH__ */
+#endif // __ADXL375_HH__
