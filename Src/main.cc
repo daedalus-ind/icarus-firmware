@@ -303,8 +303,8 @@ static inline bool IMU_Config()
   bool result = true;
 
   result &= imu.init();
-  result &= imu.enableAccelerometer(sensors::icm::AccelODR::Hz_800, sensors::icm::AccelFS::G_2);
-  result &= imu.enableGyroscope(sensors::icm::GyroODR::Hz_800, sensors::icm::GyroFS::DPS_31_25);
+  result &= imu.enableAccelerometer(sensors::icm::ODR::Hz_800, sensors::icm::AccelFS::G_2);
+  result &= imu.enableGyroscope(sensors::icm::ODR::Hz_800, sensors::icm::GyroFS::DPS_31_25);
   result &= imu.enableFIFO();
 
   return result;
@@ -422,8 +422,8 @@ static inline void Radio_Message_Handler()
   }
 
   case radio::Message::Command::StartKalman: {
-    auto imu_data = imu.getLatestFIFOData();
-    auto mag_data = mag.getMagneticField();
+    auto imu_data = imu.readLatestFIFOData();
+    auto mag_data = mag.readMagneticField();
     if (!imu_data || !mag_data) {
       tx_message.create(radio::Message::Class::Ack, radio::Message::AckType::NotAcknowledge);
       break;
